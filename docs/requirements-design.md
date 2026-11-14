@@ -153,7 +153,7 @@ Planned initial price risk ₹50, plus estimated costs
 
 Trailing example: `LIVE | P-104 | SL confirmed ₹95 → ₹101 | remaining 5 shares | broker acknowledgement time`. A pending or rejected amendment must say so instead.
 
-Deduplicate by event ID, recipient and channel; use bounded retries, expiry and delivery receipts. Suppress obsolete trailing updates after a later revision or final exit. Prioritize protection failures over routine summaries. Avoid per-tick messages; cap routine messages and show cost estimates. A messaging outage must never prevent stop management. WhatsApp is an alert channel, not an order-control channel in release one.
+Deduplicate by event ID, recipient and channel; use bounded retries, expiry and delivery receipts. Suppress obsolete trailing updates after a later revision or final exit. Prioritize protection failures over routine summaries. Avoid per-tick messages; cap routine messages and show cost estimates. A messaging outage must never prevent stop management. When introduced in a later phase, WhatsApp remains an alert channel rather than an order-control channel.
 
 ## 5. Architecture: inexpensive now, replaceable later
 
@@ -173,7 +173,7 @@ flowchart LR
   B --> DB
   DB --> UI[Private dashboard]
   DB --> Q[Notification outbox]
-  Q --> WA[WhatsApp adapter]
+  Q -. deferred .-> WA[WhatsApp adapter]
   Q --> IA[In-app alerts]
 ```
 
@@ -277,4 +277,3 @@ Remaining checks:
 Before enabling real API orders: O1/O2/O6 are resolved; authentication and static-IP eligibility are verified; execution/partial-fill/protection/restart tests pass; owner approves actual capital and per-plan risk; an independent broker-app recovery path is available; and the UI clearly separates real money from simulations. The initial real allowlist and quantities are explicitly limited. The new repository starts with `LIVE_TRADING_ENABLED=false`; the earlier project's credentials and runtime settings remain untouched.
 
 Before unattended live use: additionally complete an outcome review, real fill/cost comparison, durable monitoring, incident procedures and explicit approval of automated entry behavior. Expensive infrastructure and future public distribution are not prerequisites for the private paper pilot.
-
