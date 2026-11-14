@@ -1,0 +1,63 @@
+{
+  "schema_version": "0.1",
+  "implementation_status": "design_only",
+  "mode": "paper",
+  "currency": "INR",
+  "capital_ceiling": 50000,
+  "paper_starting_capital": 50000,
+  "monthly_operating_budget_ceiling": 1000,
+  "market_data_provider": "angelone",
+  "execution_broker": "paper",
+  "market": {
+    "exchange": "NSE",
+    "segment": "CASH",
+    "long_only": true,
+    "timezone": "Asia/Kolkata",
+    "market_sessions_only": true,
+    "require_exchange_calendar": true,
+    "reconcile_before_entries": true,
+    "local_overnight_monitor": false
+  },
+  "universe": {
+    "maximum_research_symbols": 500,
+    "initial_live_watchlist_limit": 50,
+    "always_monitor_open_positions_during_session": true,
+    "display_top": 50,
+    "archive_top": 5,
+    "shortlist_display_days": 30
+  },
+  "proposed_paper_risk": {
+    "status": "hypotheses_not_approved_live_limits",
+    "risk_per_trade_pct": 0.5,
+    "daily_equity_loss_lock_pct": 1.5,
+    "maximum_aggregate_initial_risk_pct": 2,
+    "maximum_position_value_pct": 20,
+    "maximum_open_positions": 4
+  },
+  "live_risk": {
+    "risk_per_trade_pct": null,
+    "daily_equity_loss_lock_pct": null,
+    "maximum_aggregate_initial_risk_pct": null,
+    "enabled": false
+  },
+  "execution": {
+    "require_individual_entry_approval": true,
+    "plan_approval_may_cover_disclosed_protective_actions": true,
+    "unattended_entries_enabled": false,
+    "require_verified_overnight_protection": true
+  },
+  "proposed_paper_exit_policy": {
+    "status": "hypothesis_to_evaluate",
+    "tp1_r": 1,
+    "tp1_fraction": 0.5,
+    "tp2_r": 2,
+    "trailing_timeframe": "completed_daily",
+    "trailing_atr_period": 14,
+    "trailing_atr_multiplier": 2,
+    "activate_after_confirmed_tp1_fill": true,
+    "single_share_tp1": "milestone_only_activation_requires_explicit_policy",
+    "never_loosen_stop": true
+  },
+  "alerts": { "in_app": true, "whatsapp": false },
+  "ai": { "enabled": false, "role": "optional_evidence_review", "may_submit_orders": false }
+}
