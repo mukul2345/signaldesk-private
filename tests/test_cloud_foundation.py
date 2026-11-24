@@ -23,6 +23,12 @@ def test_migration_has_required_tables_and_rls():
         assert f"alter table public.{table} enable row level security" in sql
 
 
+def test_auth_migration_creates_risk_profile_for_new_user():
+    sql = (ROOT / "supabase/migrations/202611240003_auth_user_profile.sql").read_text()
+    assert "after insert on auth.users" in sql
+    assert "insert into public.risk_settings" in sql
+
+
 def test_telegram_webhook_fails_closed_without_secret(monkeypatch):
     monkeypatch.delenv("TELEGRAM_WEBHOOK_SECRET", raising=False)
     response = TestClient(create_cloud_app()).post("/api/telegram/webhook", json={})

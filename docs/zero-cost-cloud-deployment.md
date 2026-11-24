@@ -20,7 +20,7 @@ logs, or Git history. Only Vercel server functions and GitHub Actions may receiv
 ## Supabase
 
 1. Rotate the secret key.
-2. Link the Supabase CLI to the project and apply both migrations in order from
+2. Link the Supabase CLI to the project and apply all migrations in order from
    `supabase/migrations/`.
 3. Create the one private user in Supabase Auth and record its UUID as
    `SIGNALDESK_OWNER_ID`.
@@ -33,6 +33,10 @@ logs, or Git history. Only Vercel server functions and GitHub Actions may receiv
    values ('YOUR_AUTH_USER_UUID', 50000, 1, 5, 5)
    on conflict (owner_id) do update set capital = excluded.capital;
    ```
+
+   Migration `202611240003_auth_user_profile.sql` automatically creates this
+   default risk record for every subsequently created Auth user; the SQL above is
+   only needed for a user created before that migration is applied.
 
    The browser uses only `VITE_SUPABASE_URL` and
    `VITE_SUPABASE_PUBLISHABLE_KEY`. `SUPABASE_SECRET_KEY` is server-only and
@@ -65,6 +69,16 @@ Use these import settings:
 Do not commit a populated `.env` file. Vercel environment variables are configured
 in its dashboard; `.env.example` documents their names only.
 
+## Signup and password recovery
+
+The login page supports sign-in, password recovery, recovery-password update, and
+optional registration. Registration remains disabled by default with
+`VITE_ALLOW_SIGNUP=false`; set it to `true` only when public account creation is
+intended, then redeploy. In Supabase **Auth → URL Configuration**, set the Site URL
+to the Vercel production URL and add the production URL plus
+`http://127.0.0.1:4173` to the Redirect URLs allow list. Keep email confirmation
+enabled so a new user must verify their address before sign-in.
+
 ## GitHub Actions
 
 Add `SUPABASE_URL`, the newly rotated `SUPABASE_SECRET_KEY`, and
@@ -96,7 +110,7 @@ The handler validates Telegram's secret header and optionally locks all commands
 
 ## Remaining deployment gates
 
-- rotate the exposed Supabase secret and apply both migrations
+- rotate the exposed Supabase secret and apply all migrations
 - create the private Supabase Auth user and seed its `risk_settings` row
 - run an integration test against the real Supabase project
 - validate the permitted market-data source and Angel One daily authentication

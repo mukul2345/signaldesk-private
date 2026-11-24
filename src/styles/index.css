@@ -34,3 +34,6 @@
 .auth-card button:disabled { opacity: .65; cursor: wait; }
 .auth-card small { color: #76908d; text-align: center; }
 .auth-error { color: #ff9e9e; }
+.auth-notice { color: #8df3cf; }
+.auth-links { display: flex; justify-content: space-between; gap: 12px; }
+.auth-links button { padding: 0; background: transparent; color: #8df3cf; font-weight: 600; }
