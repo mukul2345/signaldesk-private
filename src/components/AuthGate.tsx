@@ -1,10 +1,18 @@
-import { FormEvent, ReactNode, useState } from "react";
-import { cloudMode, currentSession, signIn } from "../auth/supabaseAuth";
+import { FormEvent, ReactNode, useEffect, useState } from "react";
+import { cloudMode, restoreSession, signIn } from "../auth/supabaseAuth";
 
 export function AuthGate({ children }: { children: ReactNode }) {
-  const [authenticated, setAuthenticated] = useState(() => !cloudMode || Boolean(currentSession()));
+  const [authenticated, setAuthenticated] = useState(() => !cloudMode);
+  const [checking, setChecking] = useState(cloudMode);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    if (!cloudMode) return;
+    void restoreSession()
+      .then(session => setAuthenticated(Boolean(session)))
+      .catch(reason => setError(reason instanceof Error ? reason.message : "Cloud authentication is unavailable"))
+      .finally(() => setChecking(false));
+  }, []);
   if (authenticated) return <>{children}</>;
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setBusy(true); setError("");
@@ -17,10 +25,10 @@ export function AuthGate({ children }: { children: ReactNode }) {
     <span className="eyebrow">PRIVATE PAPER-RESEARCH TERMINAL</span>
     <h1>Sign in to SignalDesk</h1>
     <p>Your Supabase session protects alerts, paper positions and portfolio records.</p>
-    <label>Email<input name="email" type="email" autoComplete="username" required/></label>
-    <label>Password<input name="password" type="password" autoComplete="current-password" required/></label>
+    <label>Email<input name="email" type="email" autoComplete="username" required disabled={checking}/></label>
+    <label>Password<input name="password" type="password" autoComplete="current-password" required disabled={checking}/></label>
     {error && <p className="auth-error" role="alert">{error}</p>}
-    <button type="submit" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
-    <small>Paper research only. Returns are never guaranteed.</small>
+    <button type="submit" disabled={busy || checking}>{checking ? "Checking session…" : busy ? "Signing in…" : "Sign in"}</button>
+    <small>Private access only. Create the user in Supabase Auth first. Paper research only; returns are never guaranteed.</small>
   </form></main>;
 }

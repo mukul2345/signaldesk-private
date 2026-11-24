@@ -24,6 +24,19 @@ logs, or Git history. Only Vercel server functions and GitHub Actions may receiv
    `supabase/migrations/`.
 3. Create the one private user in Supabase Auth and record its UUID as
    `SIGNALDESK_OWNER_ID`.
+   In **Authentication → Users**, use **Add user → Create new user**, enter the
+   same email/password used at the SignalDesk sign-in page, and mark the email as
+   confirmed. Then run this once in Supabase SQL Editor, substituting the UUID:
+
+   ```sql
+   insert into public.risk_settings(owner_id, capital, risk_per_trade_pct, max_open_positions, max_portfolio_risk_pct)
+   values ('YOUR_AUTH_USER_UUID', 50000, 1, 5, 5)
+   on conflict (owner_id) do update set capital = excluded.capital;
+   ```
+
+   The browser uses only `VITE_SUPABASE_URL` and
+   `VITE_SUPABASE_PUBLISHABLE_KEY`. `SUPABASE_SECRET_KEY` is server-only and
+   must never be a Vite-prefixed value.
 4. Review the seeded rows in `scheduled_jobs` and enable each only after its first
    controlled manual run succeeds.
 5. Confirm RLS with both the authenticated user and an anonymous client. Service

@@ -10,7 +10,8 @@ class ApiError extends Error {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const cloudPath = cloudMode ? ({ "/dashboard": "/cloud/dashboard", "/paper/orders": "/cloud/paper/orders", "/paper/account": "/cloud/paper/account", "/portfolio/analysis": "/cloud/portfolio/analysis", "/mvp/daily-brief": "/cloud/mvp/daily-brief", "/validation/performance": "/cloud/validation/performance" } as Record<string, string>)[path] ?? path : path;
-  const token = cloudMode ? accessToken() : null;
+  const token = cloudMode ? await accessToken() : null;
+  if (cloudMode && !token) throw new ApiError("Your session expired. Please sign in again.", 401);
   const response = await fetch(`${dashboardConfig.apiBaseUrl}${cloudPath}`, {
     ...init,
     headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers }
