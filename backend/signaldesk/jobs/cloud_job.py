@@ -9,7 +9,7 @@ from signaldesk.application.cloud_jobs import deliver_notifications, observe_pap
 from signaldesk.infrastructure.supabase_rest import SupabaseRest
 
 
-SUPPORTED = {"daily-scan", "paper-observation", "portfolio-review", "notification-delivery", "retention"}
+SUPPORTED = {"market-cycle", "eod-cycle", "daily-scan", "paper-observation", "portfolio-review", "notification-delivery", "retention"}
 
 
 def main() -> None:
@@ -36,7 +36,12 @@ def main() -> None:
         "retention": retention_and_health,
     }
     try:
-        result = handlers[job](client)
+        if job == "market-cycle":
+            result = {"paper": observe_paper_positions(client), "notifications": deliver_notifications(client)}
+        elif job == "eod-cycle":
+            result = {"scan": run_daily_scan(client), "portfolio": review_portfolio(client), "notifications": deliver_notifications(client)}
+        else:
+            result = handlers[job](client)
         client.update("scheduled_jobs", {"last_status": "COMPLETE", "last_completed_at": datetime.now(timezone.utc).isoformat(), "lease_owner": None, "lease_expires_at": None, "last_error": None}, {"job_key": f"eq.{job}"})
         print(result)
     except Exception as error:

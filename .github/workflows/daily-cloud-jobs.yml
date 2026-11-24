@@ -1,14 +1,18 @@
-name: Daily cloud jobs
+name: Cloud market jobs
 on:
   workflow_dispatch:
     inputs:
       job:
         description: Job to run
         type: choice
-        options: [daily-scan, paper-observation, portfolio-review, notification-delivery, retention]
-        default: daily-scan
+        options: [market-cycle, eod-cycle, daily-scan, paper-observation, portfolio-review, notification-delivery, retention]
+        default: eod-cycle
   schedule:
-    # 18:30 Asia/Kolkata. GitHub schedules use UTC and can be delayed at peak load.
+    # Market hours: 09:15 through 15:30 Asia/Kolkata (UTC schedules).
+    - cron: '45 3 * * 1-5'
+    - cron: '*/15 4-9 * * 1-5'
+    - cron: '0 10 * * 1-5'
+    # End-of-day scan/review: 18:30 Asia/Kolkata.
     - cron: '0 13 * * 1-5'
 permissions:
   contents: read
@@ -24,7 +28,7 @@ jobs:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
       SIGNALDESK_OWNER_ID: ${{ secrets.SIGNALDESK_OWNER_ID }}
-      JOB_NAME: ${{ inputs.job || 'daily-scan' }}
+      JOB_NAME: ${{ inputs.job || (github.event.schedule == '0 13 * * 1-5' && 'eod-cycle' || 'market-cycle') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

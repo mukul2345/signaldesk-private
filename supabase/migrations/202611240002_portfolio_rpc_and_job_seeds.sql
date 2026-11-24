@@ -1,6 +1,8 @@
 begin;
 
 insert into public.scheduled_jobs(job_key, schedule, enabled) values
+  ('market-cycle', 'market hours every 15 minutes', false),
+  ('eod-cycle', '0 13 * * 1-5', false),
   ('daily-scan', '0 13 * * 1-5', false),
   ('paper-observation', '*/15 3-10 * * 1-5', false),
   ('portfolio-review', '30 10 * * 1-5', false),

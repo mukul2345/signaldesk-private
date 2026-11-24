@@ -48,6 +48,10 @@ Add `SUPABASE_URL`, the newly rotated `SUPABASE_SECRET_KEY`, and
 Keep the repository variable `CLOUD_JOBS_ENABLED` unset or `false` until all job
 adapters pass integration tests. Scheduled runs are gated by this variable; manual
 dispatch remains available for controlled validation.
+The workflow runs a `market-cycle` every 15 minutes from 09:15 through 15:30 IST
+and an `eod-cycle` at 18:30 IST on weekdays. GitHub schedules can be delayed, so
+every operation uses database idempotency and persisted timestamps rather than
+assuming exact invocation time.
 For a truly zero-cost private repository, watch the included Actions-minute quota;
 public repositories get standard hosted runners free, while private repositories
 have a monthly allowance.
