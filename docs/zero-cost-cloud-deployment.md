@@ -72,10 +72,10 @@ in its dashboard; `.env.example` documents their names only.
 ## Signup and password recovery
 
 The login page supports sign-in, password recovery, recovery-password update, and
-optional registration. Registration remains disabled by default with
-`VITE_ALLOW_SIGNUP=false`; set it to `true` only when public account creation is
-intended, then redeploy. In Supabase **Auth → URL Configuration**, set the Site URL
-to the Vercel production URL and add the production URL plus
+registration. Registration is enabled by default; set `VITE_ALLOW_SIGNUP=false`
+only if account creation must be paused for maintenance, then redeploy. In Supabase
+**Auth → URL Configuration**, set the Site URL to the Vercel production URL and add
+the production URL plus
 `http://127.0.0.1:4173` to the Redirect URLs allow list. Keep email confirmation
 enabled so a new user must verify their address before sign-in.
 

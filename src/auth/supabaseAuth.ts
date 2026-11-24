@@ -6,7 +6,8 @@ const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
 const storageKey = "signaldesk.supabase.session";
 
 export const cloudMode = import.meta.env.VITE_CLOUD_MODE === "true";
-export const signupEnabled = import.meta.env.VITE_ALLOW_SIGNUP === "true";
+// Registration is available unless an operator explicitly disables it for maintenance.
+export const signupEnabled = import.meta.env.VITE_ALLOW_SIGNUP !== "false";
 
 function configurationError(): Error | null {
   if (!cloudMode) return null;
