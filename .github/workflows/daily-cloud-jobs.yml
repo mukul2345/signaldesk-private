@@ -1,0 +1,33 @@
+name: Daily cloud jobs
+on:
+  workflow_dispatch:
+    inputs:
+      job:
+        description: Job to run
+        type: choice
+        options: [daily-scan, paper-observation, portfolio-review, notification-delivery, retention]
+        default: daily-scan
+  schedule:
+    # 18:30 Asia/Kolkata. GitHub schedules use UTC and can be delayed at peak load.
+    - cron: '0 13 * * 1-5'
+permissions:
+  contents: read
+concurrency:
+  group: signaldesk-daily-cloud-jobs
+  cancel-in-progress: false
+jobs:
+  run:
+    if: vars.CLOUD_JOBS_ENABLED == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      SIGNALDESK_OWNER_ID: ${{ secrets.SIGNALDESK_OWNER_ID }}
+      JOB_NAME: ${{ inputs.job || 'daily-scan' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: pip }
+      - run: pip install -e .
+      - run: python -m signaldesk.jobs.cloud_job

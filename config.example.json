@@ -1,12 +1,18 @@
 {
-  "schema_version": "0.1",
-  "implementation_status": "design_only",
+  "schema_version": "0.2",
+  "implementation_status": "paper_pilot",
   "mode": "paper",
   "currency": "INR",
   "capital_ceiling": 50000,
+  "providers": {
+    "research": "daily_breakout_engine",
+    "market_data": "nse_mcp",
+    "execution": "paper_simulator",
+    "institutional_data": "not_configured"
+  },
   "paper_starting_capital": 50000,
   "monthly_operating_budget_ceiling": 1000,
-  "market_data_provider": "angelone",
+  "market_data_provider": "official_nse_bhavcopy_mcp",
   "execution_broker": "paper",
   "market": {
     "exchange": "NSE",
@@ -26,6 +32,94 @@
     "archive_top": 5,
     "shortlist_display_days": 30
   },
+  "scanning": {
+    "universe_version": "nse-private-pilot-five-v1",
+    "snapshot_label": "eod",
+    "schedule_slots": ["18:30"],
+    "timezone": "Asia/Kolkata",
+    "automatic_enabled": true,
+    "active_weekdays": [0, 1, 2, 3, 4],
+    "poll_interval_seconds": 30,
+    "catch_up_window_minutes": 45,
+    "job_lease_seconds": 300,
+    "maximum_attempts": 3,
+    "job_history_limit": 10,
+    "history_retention_days": 30,
+    "minimum_coverage_ratio": 1.0,
+    "archivable_states": ["READY", "WATCH"]
+  },
+  "strategy": {
+    "version": "daily-breakout-v1-paper",
+    "warmup_bars": 55,
+    "fast_sma_period": 20,
+    "slow_sma_period": 50,
+    "breakout_lookback": 20,
+    "volume_average_period": 20,
+    "minimum_volume_ratio": 1.5,
+    "atr_period": 14,
+    "initial_stop_atr_multiple": 1.5,
+    "entry_buffer_bps": 10,
+    "maximum_entry_extension_bps": 50,
+    "target_one_r": 1.0,
+    "target_two_r": 2.0,
+    "maximum_holding_sessions": 15,
+    "tick_size": 0.05,
+    "watch_score_minimum": 60,
+    "ready_score_minimum": 80,
+    "score_weights": {"trend": 40, "breakout": 25, "volume": 20, "market": 15}
+  },
+  "angel_one": {
+    "base_url": "https://apiconnect.angelone.in",
+    "instruments_path": "state/angel-one-instruments.json",
+    "exchange": "NSE",
+    "interval": "ONE_DAY",
+    "timezone": "Asia/Kolkata",
+    "cutoff_time": "15:30",
+    "lookback_calendar_days": 180,
+    "cache_ttl_seconds": 300,
+    "request_timeout_seconds": 10,
+    "market_supportive": true
+  },
+  "nse_mcp": {
+    "bhavcopy_url": "https://mcp.nseindia.in/bhavcopy/cm/mcp",
+    "universe_path": "backend/data/nse-universe.json",
+    "universe_candidate_path": "state/nifty-500-universe-candidate.json",
+    "promoted_universe_path": "state/nse-universe-active.json",
+    "previous_universe_path": "state/nse-universe-previous.json",
+    "universe_source_url": "https://www.niftyindices.com/IndexConstituent/ind_nifty500list.csv",
+    "universe_expected_minimum": 490,
+    "universe_expected_maximum": 510,
+    "history_warmup_batch_size": 5,
+    "bootstrap_candidate_on_startup": false,
+    "automatic_history_warmup_enabled": false,
+    "history_warmup_interval_seconds": 60,
+    "cache_path": "state/nse-mcp-cache.json",
+    "timezone": "Asia/Kolkata",
+    "cutoff_time": "18:30",
+    "history_months": 3,
+    "cache_ttl_seconds": 21600,
+    "request_timeout_seconds": 30,
+    "bulk_batch_size": 50,
+    "index_names": ["Nifty 50", "Nifty 500", "NIFTY Midcap 100", "Nifty Next 50"],
+    "market_supportive_min_stock_up_percent": 50
+  },
+  "exchange_calendar": {
+    "path": "backend/data/nse-cm-calendar-2026.json"
+  },
+  "corporate_actions": {
+    "url": "https://www.nseindia.com/api/corporates-corporateActions",
+    "cache_path": "state/nse-corporate-actions.json",
+    "lookback_days": 100,
+    "cache_ttl_seconds": 86400,
+    "request_timeout_seconds": 30,
+    "blocking_keywords": ["BONUS", "SPLIT", "SUB-DIVISION", "CONSOLIDATION", "RIGHTS", "DEMERGER", "MERGER", "FACE VALUE"],
+    "bonus_ratio_pattern": "\\bBONUS\\s+(\\d+(?:\\.\\d+)?)\\s*:\\s*(\\d+(?:\\.\\d+)?)",
+    "face_value_ratio_pattern": "\\b(?:SPLIT|SUB-DIVISION|CONSOLIDATION).*?FROM\\s+(?:RS|RE)\\s*(\\d+(?:\\.\\d+)?).*?\\bTO\\s+(?:RS|RE)\\s*(\\d+(?:\\.\\d+)?)",
+    "adjustment_price_decimals": 6,
+    "adjustment_volume_decimals": 2,
+    "maximum_unexplained_gap_percent": 35,
+    "report_symbol_limit": 20
+  },
   "proposed_paper_risk": {
     "status": "hypotheses_not_approved_live_limits",
     "risk_per_trade_pct": 0.5,
@@ -38,13 +132,16 @@
     "risk_per_trade_pct": null,
     "daily_equity_loss_lock_pct": null,
     "maximum_aggregate_initial_risk_pct": null,
-    "enabled": false
+    "enabled": false,
+    "maximum_position_value_pct": null,
+    "maximum_open_positions": null
   },
   "execution": {
     "require_individual_entry_approval": true,
     "plan_approval_may_cover_disclosed_protective_actions": true,
     "unattended_entries_enabled": false,
-    "require_verified_overnight_protection": true
+    "require_verified_overnight_protection": true,
+    "require_supervised_dashboard_for_new_live_entries": true
   },
   "proposed_paper_exit_policy": {
     "status": "hypothesis_to_evaluate",
@@ -58,6 +155,13 @@
     "single_share_tp1": "milestone_only_activation_requires_explicit_policy",
     "never_loosen_stop": true
   },
-  "alerts": { "in_app": true, "whatsapp": false },
-  "ai": { "enabled": false, "role": "optional_evidence_review", "may_submit_orders": false }
+  "alerts": {
+    "in_app": true,
+    "whatsapp": false
+  },
+  "ai": {
+    "enabled": false,
+    "role": "optional_evidence_review",
+    "may_submit_orders": false
+  }
 }

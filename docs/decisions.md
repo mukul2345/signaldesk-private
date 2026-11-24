@@ -33,3 +33,19 @@ An AI model can review supplied evidence and estimate conditional outcomes. It c
 FII/DII market-wide flows, company ownership disclosures, disclosed deals and price/volume pressure estimates are distinct data sources with different publication delays and coverage. None is treated as a complete live map of named institutions' stock purchases. Source timestamps, missing data and revisions must remain visible. AI-generated explanations cannot fill factual gaps.
 
 No market feed or model endpoint is connected in this new repository yet. Future AI evaluation compares held-out net performance and calibration with the deterministic baseline, including costs, losses and unresolved trades.
+
+## Engineering decisions from the requirements review
+
+Using the owner's delegated technical authority: FastAPI + SQLite backend; React/TypeScript/Vite + Tailwind + Motion frontend; same-origin local serving and recoverable WebSocket events. Build fresh with no dependency on the old deployment or parent credentials.
+
+Requirements v0.3 section 13 defines scan coverage, risk accounting, atomic event processing, subscription priority and supervised live entry behavior. These are implementation requirements, not completed controls. All numerical live limits remain unset. Strategy formulas, paper fill assumptions and holding-period expiry must be frozen before their engine implementation; broker capability verification and owner risk approval gate real orders.
+
+## Owner requirement: configurable micro-modules
+
+All business/operational values must come from validated, versioned configuration; secrets remain server-side. Small responsibility-focused modules with explicit interfaces and dependency injection form one local modular application. Mathematical/protocol constants and mandatory safety invariants remain named code definitions, not editable trading settings. Requirements v0.4 section 14 defines configuration ownership, module boundaries and acceptance checks. These requirements are recorded; enforcement will be built with the application.
+
+## Owner requirement — 15 November 2026
+
+No hardcoded configurable business or operational values. Use a validated central configuration contract, injected settings, versioned plan snapshots and shared UI design tokens. Keep secrets separate. Named mathematical/protocol constants and test fixtures are permitted; live limits cannot default silently.
+
+Build small cohesive modules with explicit interfaces and enforced dependency direction. Use a modular application initially, not a fleet of microservices. Requirements section 14 defines backend/frontend boundaries and verification criteria.

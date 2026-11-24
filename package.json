@@ -1,0 +1,27 @@
+{
+  "name": "signaldesk-private",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "api": ".venv/bin/python backend/run.py",
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test:api": "PYTHONPATH=backend PYTHONPYCACHEPREFIX=/tmp/signaldesk-pycache .venv/bin/python -m unittest discover -s tests -v",
+    "sync:nse-universe": "PYTHONPATH=backend .venv/bin/python -m signaldesk.tools.sync_nse_universe",
+    "mvp:run": "PYTHONPATH=backend .venv/bin/python backend/run_mvp.py",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "typescript": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@types/react": "latest",
+    "@types/react-dom": "latest"
+  }
+}

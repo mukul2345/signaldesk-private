@@ -1,0 +1,1 @@
+"""SignalDesk paper-research service."""

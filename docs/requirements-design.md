@@ -1,6 +1,6 @@
 # SignalDesk: requirements and technical design
 
-Version: 0.2 · 14 November 2026 · Owner: Mukul Gupta
+Version: 0.4 · 14 November 2026 · Owner: Mukul Gupta
 
 Status: implementation baseline for a new standalone local repository. The owner has agreed that approval of a live trade plan may cover its defined protective exits and trailing updates. This does not approve any specific real order, unrestricted automated entries, or live-mode activation.
 
@@ -46,6 +46,8 @@ Primary views:
 6. **Settings/health:** provider selection, masked connection status, risk limits, notification preferences, session renewal and pause controls.
 
 User flow: connect own account → inspect plan → paper trade or preview a real plan → approve the exact real plan → monitor fills and broker-confirmed protection → review outcome. No broker login for hypothetical future visitors is built now.
+
+Premium interface acceptance: responsive scanner and plan drawer, keyboard-accessible actions, readable contrast and explicit loading/empty/error/stale states. Respect reduced-motion settings. Animate navigation and noncritical transitions; keep prices, risk figures and confirmation controls stable. Show Nifty, Sensex, Midcap and Nifty IT only when the adapter supplies verified instrument mappings and values; daily change uses the previous trading-session close, with timestamp and unavailable states. Demo/replay data always carries a persistent badge. No fabricated probability, live connection or institutional evidence may appear in UI fixtures as real data.
 
 ## 4. Functional requirements
 
@@ -157,7 +159,7 @@ Deduplicate by event ID, recipient and channel; use bounded retries, expiry and 
 
 ## 5. Architecture: inexpensive now, replaceable later
 
-Start with one Python backend containing clear modules, SQLite in WAL mode and a local React interface. Reuse the existing dashboard components through a local API; its current D1 routes require adaptation and are not automatically connected to the Python engine. Serve UI/API on the same local origin, or use a development proxy. Do not expose a laptop service directly to the public internet.
+Selected stack: Python with FastAPI for the domain/API, SQLite in WAL mode, and React + TypeScript + Vite for the interface. Use Tailwind CSS, accessible components and Motion for UI transitions. Build fresh in this repository; earlier dashboard components may be evaluated individually but are not runtime dependencies. Serve the production UI/API on one local origin with a development proxy. Use WebSockets for status events, with REST snapshots and a persisted event cursor to recover missed events. A browser reconnect must not submit orders. Pin supported runtime/dependency versions and commit lockfiles when scaffolding; document one-command development startup. Do not expose a laptop service directly to the public internet.
 
 ```mermaid
 flowchart LR
@@ -179,7 +181,7 @@ flowchart LR
 
 One process may run feed, scheduling, execution and notification loops initially, but database transactions must be short and external calls must not block protection monitoring. Use one execution owner per account and a bounded work queue. Browser closure has no effect while the backend is running. Laptop sleep, power loss and internet loss stop local processing; the app must not claim otherwise.
 
-Do not add Kubernetes, Kafka, separate microservices, paid AI, a vector database, billing or a multi-user account system to the pilot. Use the existing Docker configuration only after changing its current Yahoo daemon path to the verified private-data workflow.
+Do not add Kubernetes, Kafka, separate microservices, paid AI, a vector database, billing or a multi-user account system to the pilot. Container packaging is optional and must be created for this repository after local startup works; do not inherit the old Yahoo daemon or deployment configuration.
 
 ### Adapter contracts
 
@@ -196,9 +198,9 @@ Provider switching requires configuration plus a validated mapping/backfill, tim
 
 ## 6. Retention, security and operating behavior
 
-- Show 30 days of top-five history. Proposed private audit retention is at least 12 months for plans, orders, fills and performance; confirm this choice before changing the current 30-day snapshot deletion behavior. Future commercial retention is reviewed separately.
+- Show 30 days of top-five history. Proposed private audit retention is at least 12 months for plans, orders, fills and performance; implement these as separate retention policies in the new repository; do not inherit deletion jobs from the old project. Never prune open-position dependencies or records required to reconcile an unresolved order. Future commercial retention is reviewed separately.
 - Avoid permanent full-market tick storage. Proposed raw-data retention is a rolling 1–7 days for the watched instruments, with selected incident samples and derived bars retained longer, subject to provider terms and a disk cap.
-- Keep secrets out of browser bundles, source control, URLs generated by us and logs. Use OS keychain/encrypted storage for persisted sessions; ignored owner-readable environment files only for local configuration. Existing root `.env` is loaded by Docker; the hosted Site does not automatically read it.
+- Keep secrets out of browser bundles, source control, URLs generated by us and logs. Use OS keychain/encrypted storage for persisted sessions; ignored owner-readable environment files only for local configuration. Load only this repository’s explicitly configured environment file; never search parent directories for credentials.
 - Bind locally by default. Even local write endpoints require an application session, origin validation and CSRF protection; loopback alone is not authorisation to trade. Any later network-accessible installation additionally needs HTTPS, strong owner authentication and account authorisation. Redact logs in both modes. Live and paper modes have separate configuration and visible identifiers.
 - Use daily consistent database backups, verify restore before live enablement, and recover trading state from broker reconciliation after a restore. Backup credentials separately and securely.
 - Track clock drift, feed age, data gaps, queue lag, unknown orders, unprotected quantities, last reconciliation, free disk and notification failures.
@@ -277,3 +279,100 @@ Remaining checks:
 Before enabling real API orders: O1/O2/O6 are resolved; authentication and static-IP eligibility are verified; execution/partial-fill/protection/restart tests pass; owner approves actual capital and per-plan risk; an independent broker-app recovery path is available; and the UI clearly separates real money from simulations. The initial real allowlist and quantities are explicitly limited. The new repository starts with `LIVE_TRADING_ENABLED=false`; the earlier project's credentials and runtime settings remain untouched.
 
 Before unattended live use: additionally complete an outcome review, real fill/cost comparison, durable monitoring, incident procedures and explicit approval of automated entry behavior. Expensive infrastructure and future public distribution are not prerequisites for the private paper pilot.
+
+## 13. Implementation contracts added by requirements review
+
+These engineering decisions refine the baseline. They do not approve numerical live risk or establish a profitable strategy. See [readiness review](implementation-readiness-review.md) for unresolved release gates.
+
+### Strategy, universe and scan contract
+
+Before strategy implementation, create a versioned strategy contract specifying indicator formulas and warm-up, adjustment convention, universe eligibility, trend/volume filters, entry trigger and permitted price band, initial stop, expiry, exits and ranking tie-breaks. Freeze examples for READY, WATCH, AVOID, insufficient history, gap-through-entry and no-trade days. This is milestone A work owned by implementation, not a request for the owner to choose indicators. No ad hoc blend of the previous projects or imported skills is accepted as a strategy definition.
+
+Start with one deterministic daily swing hypothesis. Intraday snapshots may confirm freshness/entry conditions but must not recalculate daily indicators using an unfinished candle. Define a time exit and the outcome horizon before evaluating the requested 2–3 week holding period; targets alone do not define trade duration. Decide whether a setup expired, never entered, stopped, targeted or remains open; do not count unfilled ideas as profitable trades.
+
+Version the available constituent list with effective/source dates. Exclude unsupported instruments explicitly. Publish a full run only after every eligible instrument has either a valid result or a recorded exclusion; data errors are failures, not eligibility exclusions. Partial results may be inspected with an INCOMPLETE badge but cannot replace the actionable published shortlist. Rank deterministically, show up to 50 eligible candidates, and archive up to five per scheduled snapshot. Do not fill quotas with weak setups. Show unique setups separately from repeated snapshot appearances.
+
+### Risk arithmetic and capital accounting
+
+Keep paper and live ledgers separate. The ₹50,000 ceiling bounds app-managed committed exposure, including pending entry reservations; it is not the broker account balance. Existing external holdings/orders must be reconciled, and overlapping instruments block automation until ownership is resolved. Never silently adopt them. Deposits do not automatically increase the configured capital ceiling.
+
+For proposed paper sizing, the risk base is the smaller of the capital ceiling and reconciled usable equity; available cash independently limits purchases. Reserve cash, estimated fees and initial risk atomically before submission. Aggregate risk includes unfilled entry reservations and remaining position initial risk; a tightened stop does not automatically release initial-risk budget in the pilot. Release reservations only after confirmed fills/cancellations/reconciliation, never after a timeout alone.
+
+Daily loss uses a persisted previous-session closing marked equity baseline, adjusted for external deposits/withdrawals, and current marked equity including realized/unrealized P&L and estimated fees. This includes overnight gaps; resetting the baseline to the opening quote would hide them. First-session initialization must be recorded explicitly. Stale marks or unresolved cash movements block new entries. Once hit, the entry lock remains latched for that trading session, including after restart or a subsequent rebound. These definitions require fixtures before use; numeric live limits, maximum position size/count and emergency exit bounds still require owner approval.
+
+### Event processing, subscriptions and recovery
+
+The database transaction must atomically persist a fill, its ledger effects, position revision and outbox events. Deduplicate fills using broker/account identifiers; repeated or late callbacks cannot regress confirmed quantities. A cancellation acknowledgement does not erase a late fill. Reconcile fills independently of order-state labels. Enforce one account execution owner across multiple application processes, not merely one worker in each process.
+
+Reserve stream capacity for held positions and their required market context before admitting new research subscriptions. Evict research subscriptions first when quotas bind; block new entries when necessary monitoring cannot fit. Full scans must use bounded, rate-limited work, with protection/reconciliation taking priority. Never silently drop order/fill events when a queue fills. Surface backpressure and pause entries.
+
+Before shutting down at session end, persist reconciliation status and pending work. At next startup, recover missed work without replaying stale entry approvals. A fresh socket is not a fresh quote. Treat feed heartbeat, per-instrument quote age and completed-bar coverage separately. Calendar availability and authoritative source access are provider acceptance requirements; no weekday-only fallback for live entries.
+
+### Supervision and protective execution
+
+In-app delivery means durable availability in the dashboard, not guaranteed immediate owner notification. With the tab closed, sleep or a failed connection, the owner may not see an incident. Approved-live phase therefore requires a supervised dashboard connection for new entries; loss of supervision pauses entries and leaves broker protection intact. Browser status must never drive cancellation of protective orders. Recovery still requires broker reconciliation and explicit live re-arming.
+
+Before live implementation acceptance, record a broker capability matrix for delivery authorisation, stop validity/renewal, target and stop coexistence, partial fills, cancellation races, supported order types and outage behavior. An application-side quantity check cannot guarantee protection from two already-working broker exits. Unsupported simultaneous exits must be disabled or replaced by a verified supported policy disclosed in the plan. If no policy satisfies overnight protection and bounded exits, keep the live path disabled.
+
+Paper assumptions must be numeric, versioned and visible: quote/bar fill mode, spread, slippage, latency, participation cap, fees and stop-gap handling. Until that contract is implemented, do not present paper P&L as evidence. Daily-bar replay and observed-live-paper results remain separate cohorts. Corporate actions, trading halts/circuits and missing prices require explicit suspend/reconcile behavior; they must not create artificial fills or profits.
+
+### Additional acceptance cases
+
+16. **Loss baseline:** an overnight loss, cash deposit, stale mark and restart produce the defined equity and latched daily loss behavior.
+17. **Atomic ledger:** crash between fill receipt and commit, duplicate fill and late fill after cancellation conserve cash/quantity and emit one logical alert.
+18. **Supervision:** closing the tab blocks new live entries without cancelling broker protection; reconnect recovers events without submitting an order.
+19. **Capacity:** a second process cannot execute the same account; rate limits and full queues cannot starve position monitoring.
+20. **Research/UI:** incomplete runs never replace published results; missing index data is unavailable; daily changes use the previous session close; reduced motion and keyboard order confirmation work.
+21. **Adjustments:** a split, suspended instrument and gap beyond an entry band produce no artificial return or unintended fill.
+
+## 14. Configuration and micro-module requirements
+
+Owner requirement: no hardcoded operational/business values; implement small, cohesive modules. This means a modular application in one local deployment, not a fleet of microservices.
+
+### Configuration ownership
+
+- Put strategy parameters, capital/risk limits, fees/slippage, scan schedules, universe/watchlist limits, freshness thresholds, retries/timeouts, retention, provider endpoints and feature flags in typed, versioned configuration. Values shown earlier in this document are explicit example/proposed configuration, never hidden implementation defaults.
+- Keep secrets in server-side environment/keychain storage. Maintain a separate allowlisted public configuration response; never serialize the complete settings object to the frontend. The frontend must not independently define trading rules or risk defaults.
+- Maintain one schema for each module's settings and compose them at the application boundary. Validate ranges, units, required fields and cross-field constraints before starting dependent services. Unknown keys are errors. Missing live risk values must fail closed; never substitute paper defaults.
+- Use documented precedence: schema defaults for noncritical presentation/development settings, then the explicit configuration file, then allowlisted environment overrides. Risk/strategy values must be explicitly present in the effective configuration. No scattered environment reads, hidden parent-file loading or fallback constants inside services.
+- Snapshot the effective nonsecret strategy/risk/execution configuration and its version/hash with each plan and run. Audit configuration changes. Existing approvals and positions retain their approved policy; changed settings cannot silently mutate them. Require revalidation and fresh approval for material changes. Apply operational changes through validated reload/restart behavior documented per field.
+- Configure UI design values through shared design tokens, with centralized labels/formatting. Mathematical constants, protocol identifiers and structural invariants may be named constants or types: making these user-editable would weaken correctness. Paper/live isolation, no secret exposure and approval enforcement are invariants, not switches that configuration can bypass.
+
+### Module boundaries
+
+Backend modules: configuration, instruments/calendar, market data, indicators, strategies, scanning, plans, risk, approvals, execution, paper simulation, portfolio/ledger, reconciliation, alerts, journal/reporting and API. Keep provider adapters and SQLite persistence behind explicit interfaces. Each module owns its models/contracts and one responsibility; extract shared primitives only when genuinely shared.
+
+Use dependency direction: API/adapters → application workflows → domain contracts. Domain calculations must not import FastAPI, database clients or broker SDKs. Pass settings and dependencies explicitly through constructors/functions; avoid mutable global service state. The application composition root wires modules together. Do not split every function into a file or add a generic framework without a concrete need.
+
+Frontend modules: market overview, scanner, trade plan, paper portfolio, live account, journal, alerts and settings. Each feature owns its components and API-facing hooks; shared primitives include design tokens, accessible controls and formatting. Broker credentials, order sizing and risk validation stay server-side. Use a typed API contract rather than duplicating backend domain rules.
+
+Tests follow module boundaries: pure calculation fixtures, adapter contract tests and integration tests for critical cross-module execution/recovery. Enforce import boundaries and reject circular dependencies in automated checks. Avoid catch-all services and utility folders; split a module when it acquires independent responsibilities, not solely to satisfy an arbitrary line count.
+
+### Acceptance
+
+22. **Configuration:** changing a strategy parameter, schedule, fee or freshness limit requires no source edit; invalid/missing settings fail explicitly. Plans reproduce against their saved configuration. No secret appears in public configuration or logs.
+23. **Boundaries:** a fake market-data or execution adapter can replace the provider without changing strategy/risk code; domain tests run without network or web-server setup. Automated boundary checks prevent forbidden imports and cycles.
+24. **Change safety:** a configuration reload cannot loosen protection, increase an approved quantity, reactivate live trading or rewrite historical plans without the required validation/approval workflow.
+
+## 14. Configuration and small-module standard
+
+Confirmed by the owner on 15 November 2026: configurable values must not be hardcoded in implementation, and the codebase must use small, cohesive modules. This means a modular application in one local deployment initially; independently deployed microservices are not required.
+
+### Configuration contract
+
+- Put capital/risk limits, strategy parameters, universe/watchlist sizes, snapshot schedules, freshness thresholds, retry/backoff/timeouts, queue/storage/retention limits, fee/slippage assumptions, feature flags and provider endpoints in typed, validated configuration. Exchange calendars, instrument mappings, tick/lot sizes and session boundaries come from versioned provider/reference data, not embedded stock lists or weekday assumptions.
+- Load configuration once through a dedicated configuration module and inject typed settings into consumers. No scattered environment reads or duplicate frontend trading defaults. The server owns calculations and exposes only a safe, non-secret settings projection to the UI.
+- Document precedence: checked-in non-secret defaults, explicit local configuration, then an allowlisted set of environment overrides. Reject unknown keys, invalid units/ranges and incompatible settings at startup. Required live settings have no permissive fallback. Secrets come only from environment/secure storage; never from checked-in defaults, API responses or logs.
+- Record a configuration version and non-secret effective-settings hash with every plan/run. Freeze the relevant strategy, risk and execution settings into each approved plan. Changing configuration cannot silently change an approved position policy, enable live execution or increase risk; validate changes and require the applicable new approval. Credentials never enter hashes or plan snapshots.
+- Fixed mathematical/protocol constants and enum values may be named in their owning module. They are distinct from tunable business policy. Test fixture values are explicit test data. UI colors, spacing and animation durations use shared design tokens, with reduced-motion support.
+- Maintain documented example configuration and a schema from the same definitions. Test override precedence, missing required settings, invalid configuration and secret redaction. Changing a supported policy value must not require editing application source.
+
+### Module contract
+
+Backend boundaries: configuration; domain records; market-data normalization; provider adapters; calendars; indicators; strategies; scanning; risk; approvals; orders; paper execution; portfolio/ledger; persistence; scheduling; notifications; API transport. Each module owns one cohesive responsibility and exposes a small documented interface. Split further when responsibilities diverge, not to meet an arbitrary line count.
+
+Domain calculations remain pure where possible, with no HTTP, database, environment or UI imports. Strategies consume normalized records; they cannot call brokers. Risk decisions cannot be bypassed by transport handlers. Provider-specific payloads and authentication stay inside adapters. Wire dependencies in one application composition root; avoid circular imports, mutable global services and a catch-all utilities module. Use shared domain types rather than duplicating formulas across frontend and backend.
+
+Frontend boundaries: application shell; shared design tokens/components; API/event client; market overview; scanner; trade plan; paper portfolio; live execution; journal; alerts; settings/health. Keep components focused on presentation, feature state and interactions. Route backend events through the shared client; components must not create independent trading connections or reconstruct authoritative financial calculations.
+
+Unit-test pure calculations, contract-test adapters, and integration-test persistence/order recovery. Add automated import-boundary checks as modules are introduced: domain/strategy code must not import concrete infrastructure or live execution adapters. Tests must demonstrate a provider can be replaced through its interface without strategy changes. Document module ownership and dependency direction in the architecture guide alongside implementation.
