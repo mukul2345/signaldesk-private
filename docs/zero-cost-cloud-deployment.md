@@ -41,6 +41,17 @@ The Vercel function exposes authenticated cloud dashboard, paper-account,
 portfolio, performance, transaction and Telegram endpoints. Long scans do not run
 inside Vercel functions.
 
+Use these import settings:
+
+- Root Directory: `./`
+- Framework Preset: `Vite`
+- Install Command: `npm ci`
+- Build Command: `npm run build`
+- Output Directory: `dist`
+
+Do not commit a populated `.env` file. Vercel environment variables are configured
+in its dashboard; `.env.example` documents their names only.
+
 ## GitHub Actions
 
 Add `SUPABASE_URL`, the newly rotated `SUPABASE_SECRET_KEY`, and
