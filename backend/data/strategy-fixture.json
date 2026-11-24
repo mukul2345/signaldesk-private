@@ -1,0 +1,14 @@
+{
+  "source": "illustrative_strategy_fixture",
+  "market_supportive": true,
+  "cutoff_time": "15:30",
+  "start_date": "2026-08-24",
+  "sessions": 55,
+  "instruments": [
+    {"symbol":"CDSL","company":"Central Depository Services","sector":"Financial Services","base_close":1500,"daily_change":4,"base_volume":100000,"bar_range":2,"final":{"open":1718,"high":1725,"low":1716,"close":1722,"volume":220000}},
+    {"symbol":"BEL","company":"Bharat Electronics","sector":"Defence","base_close":400,"daily_change":1.2,"base_volume":500000,"bar_range":1,"final":{"open":465.5,"high":468,"low":464.5,"close":467,"volume":950000}},
+    {"symbol":"TATAPOWER","company":"Tata Power Company","sector":"Power","base_close":350,"daily_change":0.8,"base_volume":300000,"bar_range":0.8,"final":{"open":392.5,"high":393,"low":391.8,"close":392.8,"volume":480000}},
+    {"symbol":"MAXHEALTH","company":"Max Healthcare Institute","sector":"Healthcare","base_close":1100,"daily_change":2,"base_volume":150000,"bar_range":2,"final":{"open":1206,"high":1208,"low":1204,"close":1207,"volume":240000}},
+    {"symbol":"PERSISTENT","company":"Persistent Systems","sector":"Information Technology","base_close":6000,"daily_change":2,"base_volume":200000,"bar_range":4,"final":{"open":6200,"high":6220,"low":6180,"close":6190,"volume":420000}}
+  ]
+}

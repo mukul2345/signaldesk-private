@@ -1,0 +1,10 @@
+{
+  "description": "Copy this file, replace every token from Angel One's current instrument master, and point angel_one.instruments_path to the copy.",
+  "instruments": [
+    {"symbol":"BEL","company":"Bharat Electronics","sector":"Defence","symbol_token":"REPLACE_WITH_CURRENT_TOKEN"},
+    {"symbol":"CDSL","company":"Central Depository Services","sector":"Financial Services","symbol_token":"REPLACE_WITH_CURRENT_TOKEN"},
+    {"symbol":"MAXHEALTH","company":"Max Healthcare Institute","sector":"Healthcare","symbol_token":"REPLACE_WITH_CURRENT_TOKEN"},
+    {"symbol":"TATAPOWER","company":"Tata Power Company","sector":"Power","symbol_token":"REPLACE_WITH_CURRENT_TOKEN"},
+    {"symbol":"PERSISTENT","company":"Persistent Systems","sector":"Information Technology","symbol_token":"REPLACE_WITH_CURRENT_TOKEN"}
+  ]
+}

@@ -15,9 +15,9 @@ coverage/
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts
-state/
-data/
-logs/
+/state/
+/data/
+/logs/
 *.db
 *.db-*
 *.sqlite*

@@ -1,0 +1,10 @@
+{
+  "version": "nse-private-pilot-five-v1",
+  "instruments": [
+    {"symbol":"BEL","company":"Bharat Electronics","sector":"Defence"},
+    {"symbol":"CDSL","company":"Central Depository Services","sector":"Financial Services"},
+    {"symbol":"MAXHEALTH","company":"Max Healthcare Institute","sector":"Healthcare"},
+    {"symbol":"TATAPOWER","company":"Tata Power Company","sector":"Power"},
+    {"symbol":"PERSISTENT","company":"Persistent Systems","sector":"Information Technology"}
+  ]
+}

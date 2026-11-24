@@ -1,0 +1,11 @@
+{
+  "CDSL": [
+    {"observed_at":"2026-11-16T09:25:00+05:30","price":1744.0,"available_quantity":12},
+    {"observed_at":"2026-11-16T10:05:00+05:30","price":1749.0,"available_quantity":2},
+    {"observed_at":"2026-11-16T10:20:00+05:30","price":1752.0,"available_quantity":10}
+  ],
+  "BEL": [
+    {"observed_at":"2026-11-16T09:30:00+05:30","price":468.5,"available_quantity":20},
+    {"observed_at":"2026-11-16T10:15:00+05:30","price":470.5,"available_quantity":6}
+  ]
+}

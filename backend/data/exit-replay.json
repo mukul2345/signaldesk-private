@@ -1,0 +1,12 @@
+{
+  "CDSL": [
+    {"observed_at":"2026-11-17T10:00:00+05:30","price":1788.0,"available_quantity":10,"trailing_candidate":null},
+    {"observed_at":"2026-11-17T11:05:00+05:30","price":1801.0,"available_quantity":2,"trailing_candidate":1725.0},
+    {"observed_at":"2026-11-18T15:25:00+05:30","price":1825.0,"available_quantity":10,"trailing_candidate":1760.0},
+    {"observed_at":"2026-11-19T09:35:00+05:30","price":1755.0,"available_quantity":10,"trailing_candidate":null}
+  ],
+  "BEL": [
+    {"observed_at":"2026-11-17T10:30:00+05:30","price":484.5,"available_quantity":3,"trailing_candidate":462.0},
+    {"observed_at":"2026-11-18T14:45:00+05:30","price":498.5,"available_quantity":10,"trailing_candidate":478.0}
+  ]
+}
